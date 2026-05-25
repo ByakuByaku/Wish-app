@@ -5,3 +5,4 @@ __pycache__/
 logs/
 wishlist.db
 .DS_Store
+src/server/database/database.sqlite

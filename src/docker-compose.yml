@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wishlist_app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/server
+    working_dir: /var/www/html
