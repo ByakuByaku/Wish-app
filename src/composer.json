@@ -1,0 +1,29 @@
+{
+    "name": "wishlist/app",
+    "description": "A simple wishlist application backend",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "firebase/php-jwt": "^7.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/server/api/core/",
+            "App\\Models\\": "src/server/api/models/",
+            "App\\Endpoints\\": "src/server/api/v1/endpoints/"
+        }
+    },
+    "scripts": {
+        "init-db": "php src/server/database/init.php"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    }
+}

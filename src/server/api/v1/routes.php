@@ -8,7 +8,8 @@ require_once __DIR__ . '/endpoints/admin.php';
 
 $router->get('/users', 'getAll');
 $router->get('/users/(\d+)', 'getUserById');
-$router->post('/users', 'createUser');
+$router->post('/auth/register', 'registerUser');
+$router->post('/auth/login', 'loginUser');
 $router->put('/users/(\d+)', 'updateUser');
 $router->delete('/users/(\d+)', 'deleteUser');
 
@@ -20,6 +21,7 @@ $router->delete('/wishlists/(\d+)', 'deleteWishlist');
 
 $router->get('/wishlists/(\d+)/items', 'getItems');
 $router->post('/wishlists/(\d+)/items', 'addItem');
+$router->put('/wishlists/(\d+)/items/(\d+)', 'updateItem');
 $router->delete('/wishlists/(\d+)/items/(\d+)', 'deleteItem');
 $router->post('/wishlists/(\d+)/items/(\d+)/reserve', 'reserveItem');
 $router->delete('/wishlists/(\d+)/items/(\d+)/reserve', 'unreserveItem');

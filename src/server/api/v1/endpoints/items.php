@@ -62,6 +62,35 @@ function addItem($matches)
     }
 }
 
+function updateItem($matches)
+{
+    try {
+        $wishlistId = $matches[1];
+        $itemId = $matches[2];
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $item = WishlistItem::getById($itemId);
+
+        if (!$item || $item['wishlist_id'] != $wishlistId) {
+            Response::error('Item not found', [], 404);
+            return;
+        }
+
+        WishlistItem::updateItem($itemId, $data);
+
+        Response::success(
+            'Item updated successfully',
+            null
+        );
+    } catch (Exception $e) {
+        Response::error(
+            'Failed to update item',
+            $e->getMessage(),
+            500
+        );
+    }
+}
+
 function deleteItem($matches)
 {
     try {

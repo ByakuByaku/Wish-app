@@ -50,6 +50,24 @@ class WishlistItem{
         return $db->lastInsertId();
     }
     
+    public static function updateItem($id, $data)
+    {
+        $db = Database::connect();
+
+        $stmt = $db->prepare("
+            UPDATE wishlist_items
+            SET name = ?, description = ?, price = ?
+            WHERE id = ?
+        ");
+
+        return $stmt->execute([
+            $data['name'] ?? null,
+            $data['description'] ?? '',
+            $data['price'] ?? null,
+            $id
+        ]);
+    }
+    
     public static function reserve($itemId, $userId)
     {
         $db = Database::connect();
@@ -83,21 +101,4 @@ class WishlistItem{
         $stmt = $db->prepare("DELETE FROM wishlist_items WHERE id = ?");
         return $stmt->execute([$id]);
     }
-    public static function updateItem($id, $data){
-        $db = Database::connect();
-
-        $stmt = $db->prepare("
-            UPDATE wishlist_items
-            SET name = ?, description = ?, price = ?
-            WHERE id = ?
-        ");
-
-        return $stmt->execute([
-            $data['name'],
-            $data['description'] ?? '',
-            $data['price'] ?? null,
-            $id
-        ]);
-    }
-
 }

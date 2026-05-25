@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   php:
     build:
@@ -13,3 +11,11 @@ services:
     environment:
       - APACHE_DOCUMENT_ROOT=/var/www/html/server
     working_dir: /var/www/html
+    # Composer команды:
+    # docker compose -f src\docker-compose.yml exec php composer install
+    # docker compose -f src\docker-compose.yml exec php composer require пакет/имя
+    # docker compose -f src\docker-compose.yml exec php composer update
+
+volumes:
+  db_data:
+    driver: local

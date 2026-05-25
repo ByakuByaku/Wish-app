@@ -6,3 +6,14 @@ logs/
 wishlist.db
 .DS_Store
 src/server/database/database.sqlite
+.vscode
+.idea
+vendor/
+node_modules/
+.composer
+*.swp
+*.swo
+.project
+.buildpath
+.settings/
+

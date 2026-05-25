@@ -1,16 +1,13 @@
 FROM php:8.3-apache
 
-# Включить mod_rewrite
+RUN apt-get update && apt-get install -y curl zip unzip && rm -rf /var/lib/apt/lists/*
 RUN a2enmod rewrite
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Копировать php.ini конфиг
-COPY ./php.ini /usr/local/etc/php/
+COPY php.ini /usr/local/etc/php/
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Установить рабочую директорию
 WORKDIR /var/www/html
-
-# Expose port 80
 EXPOSE 80
-
-# Start Apache
-CMD ["apache2-foreground"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
