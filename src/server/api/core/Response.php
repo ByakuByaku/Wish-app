@@ -13,6 +13,11 @@ class Response
 
     public static function error($message, $data = [], $status = 400)
     {
+        Logger::error($message, [
+            'status' => $status,
+            'data' => $data,
+        ]);
+
         self::send([
             'status' => 'error',
             'message' => $message,

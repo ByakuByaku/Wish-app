@@ -25,6 +25,12 @@ class Router
         $method = $_SERVER['REQUEST_METHOD'];
         $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+        Logger::info('Request', [
+        'method' => $method,
+        'uri'    => $url,
+        'ip'     => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        ]);
+
         $apiPrefix = '/api/v1';
         $pos = strpos($url, $apiPrefix);
         if ($pos !== false) {
@@ -48,11 +54,13 @@ class Router
                 return;
             }
         }
-
+        Logger::error('Endpoint not found', [
+            'method' => $method,
+            'path'    => $path,
+        ]);
         Response::error('Endpoint not found', [], 404);
-    }
 }
-
+}
 
 
 ?>
