@@ -2,11 +2,15 @@
 
 require_once __DIR__ . '/../../models/Wishlist.php';
 require_once __DIR__ . '/../../core/Response.php';
+require_once __DIR__ . '/../../../utils/Logger.php';
+require_once __DIR__ . '/../../../middleware/JwtMiddleware.php';
+require_once __DIR__ . '/../../core/Access.php';
 
 function getWishlist($matches)
 {
     try {
-        $wishlistId = $matches[1];
+        $wishlistId = (int) $matches[1];
+        Access::wishlistRead($wishlistId);
 
         $wishlist = Wishlist::getWishlist($wishlistId);
 
@@ -31,7 +35,8 @@ function getWishlist($matches)
 function getUserWishlists($matches)
 {
     try {
-        $userId = $matches[1];
+        $userId = (int) $matches[1];
+        Access::selfOrFriend($userId);
 
         $wishlists = Wishlist::getByUserID($userId);
 
@@ -51,12 +56,15 @@ function getUserWishlists($matches)
 function createWishlist()
 {
     try {
+        $auth = Access::user();
         $data = json_decode(file_get_contents('php://input'), true);
 
-        if (!isset($data['user_id'], $data['name'])) {
-            Response::error('Missing required fields: user_id, name', [], 400);
+        if (!isset($data['name'])) {
+            Response::error('Missing required field: name', [], 400);
             return;
         }
+
+        $data['user_id'] = $auth['user_id'];
 
         $wishlistId = Wishlist::createWishlist($data);
 
@@ -77,7 +85,8 @@ function createWishlist()
 function updateWishlist($matches)
 {
     try {
-        $wishlistId = $matches[1];
+        $wishlistId = (int) $matches[1];
+        Access::wishlistWrite($wishlistId);
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!Wishlist::getWishlist($wishlistId)) {
@@ -103,7 +112,8 @@ function updateWishlist($matches)
 function deleteWishlist($matches)
 {
     try {
-        $wishlistId = $matches[1];
+        $wishlistId = (int) $matches[1];
+        Access::wishlistWrite($wishlistId);
 
         if (!Wishlist::getWishlist($wishlistId)) {
             Response::error('Wishlist not found', [], 404);

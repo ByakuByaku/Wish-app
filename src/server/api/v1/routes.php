@@ -10,6 +10,7 @@ $router->get('/users', 'getAll');
 $router->get('/users/(\d+)', 'getUserById');
 $router->post('/auth/register', 'registerUser');
 $router->post('/auth/login', 'loginUser');
+$router->post('/auth/logout', 'logoutUser');
 $router->put('/users/(\d+)', 'updateUser');
 $router->delete('/users/(\d+)', 'deleteUser');
 
@@ -25,13 +26,13 @@ $router->put('/wishlists/(\d+)/items/(\d+)', 'updateItem');
 $router->delete('/wishlists/(\d+)/items/(\d+)', 'deleteItem');
 $router->post('/wishlists/(\d+)/items/(\d+)/reserve', 'reserveItem');
 $router->delete('/wishlists/(\d+)/items/(\d+)/reserve', 'unreserveItem');
-$router->put('/wishlists/(\d+)/items/(\d+)', 'updateItem');
 
 
 $router->get('/users/(\d+)/friends', 'getFriends');
 $router->post('/users/(\d+)/friends', 'addFriend');
 $router->delete('/users/(\d+)/friends/(\d+)', 'removeFriend');
-
+$router->post('/users/(\d+)/invites', 'createInvite');
+$router->post('/users/(\d+)/invites/use', 'useInvite');
 
 $router->get('/admin/logs', 'getLogs');
 $router->get('/admin/users', 'getAllUsersAdmin');

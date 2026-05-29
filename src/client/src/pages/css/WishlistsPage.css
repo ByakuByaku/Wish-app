@@ -1,0 +1,209 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 56px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.nav-logo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  color: #777;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.nav-links a:hover {
+  color: #3aaa93;
+}
+
+.wishlists-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.wishlists-container h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 2rem;
+}
+
+.loading {
+  text-align: center;
+  color: #777;
+  font-size: 1rem;
+  padding: 3rem 0;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.wishlists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.wishlist-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #1a1a1a;
+}
+
+.wishlist-card:hover {
+  border-color: #7dd4c0;
+  box-shadow: 0 2px 8px rgba(125, 212, 192, 0.15);
+}
+
+.wishlist-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.wishlist-card p {
+  font-size: 0.85rem;
+  color: #777;
+  margin: 0;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.items-count {
+  font-size: 0.8rem;
+  color: #3aaa93;
+  font-weight: 500;
+}
+
+.add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.5rem;
+  background: #f5f5f5;
+  border: 2px dashed #d0d0d0;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #777;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.add-card:hover {
+  border-color: #7dd4c0;
+  background: #f9fffe;
+  color: #3aaa93;
+}
+
+.add-icon {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: currentColor;
+}
+
+.add-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: currentColor;
+}
+
+.add-card-large {
+  width: 180px;
+  height: 180px;
+  padding: 2rem;
+}
+
+.add-card-large .add-icon {
+  font-size: 3.5rem;
+}
+
+
+.invite-block {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.invite-section {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.invite-input {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.invite-input:focus {
+  border-color: #7dd4c0;
+}
+
+.btn-invite {
+  padding: 0.6rem 1rem;
+  background: #7dd4c0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-invite:hover {
+  background: #3aaa93;
+}
+
+.invite-code {
+  font-weight: 600;
+  color: #3aaa93;
+  font-size: 1rem;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.invite-success {
+  color: #3aaa93;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.invite-error {
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin: 0;
+}

@@ -16,7 +16,13 @@ class Wishlist {
     public static function getByUserID($userId) {
         $db = Database::connect();
 
-        $sql = "SELECT * FROM wishlists WHERE user_id = :user_id";
+        $sql = "
+            SELECT w.*, COUNT(wi.id) AS items_count
+            FROM wishlists w
+            LEFT JOIN wishlist_items wi ON wi.wishlist_id = w.id
+            WHERE w.user_id = :user_id
+            GROUP BY w.id
+        ";
         $stmt = $db->prepare($sql);
         $stmt->execute(['user_id' => $userId]);
 

@@ -2,17 +2,25 @@
 
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../core/Response.php';
+require_once __DIR__ . '/../../../utils/Logger.php';
 require_once __DIR__ . '/../../../middleware/JwtMiddleware.php';
+require_once __DIR__ . '/../../core/Access.php';
+
+function sanitizeUser(array $user): array
+{
+    unset($user['password_hash']);
+    return $user;
+}
 
 function getAll()
 {
-    JwtMiddleware::requireAuth();
+    Access::admin();
     try {
         $users = User::getAll();
 
         Response::success(
             'Users retrieved successfully',
-            $users
+            array_map('sanitizeUser', $users)
         );
     } catch (Exception $e) {
         Response::error(
@@ -24,9 +32,9 @@ function getAll()
 }
 
 function getUserById($matches){
-    JwtMiddleware::requireAuth();
     try {
-        $id = $matches[1];
+        $id = (int) $matches[1];
+        Access::selfOrFriend($id);
 
         $user = User::getById($id);
 
@@ -37,7 +45,7 @@ function getUserById($matches){
 
         Response::success(
             'User retrieved successfully',
-            $user
+            sanitizeUser($user)
         );
     } catch (Exception $e) {
         Response::error(
@@ -83,10 +91,10 @@ function createUser()
 }
 
 function updateUser($matches){
-    JwtMiddleware::requireAuth();
     try
     {
-        $id = $matches[1];
+        $id = (int) $matches[1];
+        Access::self($id);
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['password'])) {
@@ -115,10 +123,10 @@ function updateUser($matches){
 }
 
 function deleteUser($matches){
-    JwtMiddleware::requireAuth();
     try
     {
-        $id = $matches[1];
+        $id = (int) $matches[1];
+        Access::self($id);
 
         if (!User::getById($id)) {
             Response::error('User not found', [], 404);
@@ -143,66 +151,61 @@ function deleteUser($matches){
 
 function registerUser() {
     $data = json_decode(file_get_contents('php://input'), true);
-
     $name     = trim($data['name'] ?? '');
     $email    = trim($data['email'] ?? '');
     $password = $data['password'] ?? '';
     $age      = $data['age'] ?? null;
-
-    // Валидация
     if (!$name || !$email || !$password) {
-        Response::error('Имя, email и пароль обязательны', [], 400);
+        Response::error('Name, email and password are required', [], 400);
         return;
     }
-
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        Response::error('Некорректный email', [], 400);
+        Response::error('Invalid email', [], 400);
         return;
     }
-
     if (strlen($password) < 8) {
-        Response::error('Пароль минимум 8 символов', [], 400);
+        Response::error('Password must be at least 8 characters', [], 400);
         return;
     }
-
-    // Проверяем что email не занят
     if (User::getByEmail($email)) {
-        Response::error('Email уже занят', [], 409);
+        Response::error('Email is already taken', [], 409);
         return;
     }
-
     User::register([
         'name'          => $name,
         'email'         => $email,
         'age'           => $age,
         'password_hash' => password_hash($password, PASSWORD_BCRYPT),
     ]);
-
     $user  = User::getByEmail($email);
     $token = JwtMiddleware::generateToken($user);
 
-    Response::success('Регистрация успешна', ['token' => $token], 201);
+    Response::success('Registration completed successfully', ['token' => $token], 201);
 }
-
 function loginUser() {
     $data = json_decode(file_get_contents('php://input'), true);
-
     $email    = trim($data['email'] ?? '');
     $password = $data['password'] ?? '';
-
     if (!$email || !$password) {
-        Response::error('Email и пароль обязательны', [], 400);
+        Response::error('Email and password are required', [], 400);
         return;
     }
-
     $user = User::login($email, $password);
-
     if (!$user) {
-        Response::error('Неверный email или пароль', [], 401);
+        Response::error('Invalid email or password', [], 401);
         return;
     }
-
     $token = JwtMiddleware::generateToken($user);
+    Response::success('Login completed successfully', ['token' => $token]);
+}
 
-    Response::success('Авторизация успешна', ['token' => $token]);
+function logoutUser() {
+    try {
+        $user = JwtMiddleware::requireAuth();
+        Logger::logUserAction($user['user_id'], 'logout', 'User logged out');
+        
+        Response::success('Logout completed successfully', null);
+    } catch (Exception $e) {
+        Response::error('Logout failed', $e->getMessage(), 400);
+    }
 }

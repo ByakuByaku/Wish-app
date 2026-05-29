@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../utils/Logger.php';
+
 class Response
 {
     public static function success($message, $data = [], $status = 200)

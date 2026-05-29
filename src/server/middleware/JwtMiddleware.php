@@ -2,6 +2,7 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 require_once __DIR__ . '/../utils/Logger.php';
+require_once __DIR__ . '/../api/core/Response.php';
 
 class JwtMiddleware {
     public static function generateToken(array $user) {
@@ -23,41 +24,36 @@ class JwtMiddleware {
     {
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-
         if (!str_starts_with($authHeader, 'Bearer ')) {
-            Logger::warning('Токен не передан', [
+            Logger::warning('Token was not provided', [
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
             ]);
-            Response::error('Токен не передан', [], 401);
+            Response::error('Token was not provided', [], 401);
             exit;
         }
-
         $token = substr($authHeader, 7);
-
         try {
             $secret  = $_ENV['JWT_SECRET'] ?? 'fallback_secret_change_me';
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
-            Logger::info('Токен успешно проверен', ['user_id' => $decoded->user_id]);
+            Logger::info('Token verified successfully', ['user_id' => $decoded->user_id]);
             return (array) $decoded;
         } catch (Exception $e) {
-            Logger::error('Недействительный или истёкший токен', [
+            Logger::error('Invalid or expired token', [
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
             ]);
-            Response::error('Токен недействителен или истёк', [], 401);
+            Response::error('Token is invalid or expired', [], 401);
             exit;
         }
     }
-
     public static function requireAdmin(): array
     {
         $user = self::requireAuth();
-        
         if ($user['role'] != 1) {
-            Logger::warning('Попытка доступа к админскому ресурсу без прав', [
+            Logger::warning('Attempt to access admin resource without permissions', [
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
                 'user_id' => $user['user_id']
             ]);
-            Response::error('Доступ запрещён', [], 403);
+            Response::error('Access denied', [], 403);
             exit;
         }
         

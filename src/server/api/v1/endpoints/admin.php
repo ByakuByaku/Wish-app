@@ -4,9 +4,11 @@ require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Wishlist.php';
 require_once __DIR__ . '/../../core/Response.php';
 require_once __DIR__ . '/../../core/Database.php';
+require_once __DIR__ . '/../../core/Access.php';
 
 function getLogs()
 {
+    Access::admin();
     try {
         $logsPath = __DIR__ . '/../../../logs/';
         $logs = [];
@@ -38,8 +40,13 @@ function getLogs()
 
 function getAllUsersAdmin()
 {
+    Access::admin();
     try {
         $users = User::getAll();
+        foreach ($users as &$user) {
+            unset($user['password_hash']);
+        }
+        unset($user);
 
         Response::success(
             'All users retrieved successfully',
@@ -56,6 +63,7 @@ function getAllUsersAdmin()
 
 function updateUserRole($matches)
 {
+    Access::admin();
     try {
         $userId = $matches[1];
         $data = json_decode(file_get_contents('php://input'), true);
@@ -89,6 +97,7 @@ function updateUserRole($matches)
 
 function deleteWishlistAdmin($matches)
 {
+    Access::admin();
     try {
         $wishlistId = $matches[1];
 

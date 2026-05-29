@@ -3,16 +3,13 @@
 require_once __DIR__ . '/../../models/WishlistItem.php';
 require_once __DIR__ . '/../../models/Wishlist.php';
 require_once __DIR__ . '/../../core/Response.php';
+require_once __DIR__ . '/../../core/Access.php';
 
 function getItems($matches)
 {
     try {
-        $wishlistId = $matches[1];
-
-        if (!Wishlist::getWishlist($wishlistId)) {
-            Response::error('Wishlist not found', [], 404);
-            return;
-        }
+        $wishlistId = (int) $matches[1];
+        Access::wishlistRead($wishlistId);
 
         $items = WishlistItem::getByWishlistId($wishlistId);
 
@@ -32,16 +29,12 @@ function getItems($matches)
 function addItem($matches)
 {
     try {
-        $wishlistId = $matches[1];
+        $wishlistId = (int) $matches[1];
+        Access::wishlistWrite($wishlistId);
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['name'])) {
             Response::error('Missing required field: name', [], 400);
-            return;
-        }
-
-        if (!Wishlist::getWishlist($wishlistId)) {
-            Response::error('Wishlist not found', [], 404);
             return;
         }
 
@@ -65,8 +58,9 @@ function addItem($matches)
 function updateItem($matches)
 {
     try {
-        $wishlistId = $matches[1];
-        $itemId = $matches[2];
+        $wishlistId = (int) $matches[1];
+        $itemId = (int) $matches[2];
+        Access::wishlistWrite($wishlistId);
         $data = json_decode(file_get_contents('php://input'), true);
 
         $item = WishlistItem::getById($itemId);
@@ -94,8 +88,9 @@ function updateItem($matches)
 function deleteItem($matches)
 {
     try {
-        $wishlistId = $matches[1];
-        $itemId = $matches[2];
+        $wishlistId = (int) $matches[1];
+        $itemId = (int) $matches[2];
+        Access::wishlistWrite($wishlistId);
 
         $item = WishlistItem::getById($itemId);
 
@@ -122,14 +117,9 @@ function deleteItem($matches)
 function reserveItem($matches)
 {
     try {
-        $wishlistId = $matches[1];
-        $itemId = $matches[2];
-        $data = json_decode(file_get_contents('php://input'), true);
-
-        if (!isset($data['user_id'])) {
-            Response::error('Missing required field: user_id', [], 400);
-            return;
-        }
+        $wishlistId = (int) $matches[1];
+        $itemId = (int) $matches[2];
+        $auth = Access::wishlistRead($wishlistId);
 
         $item = WishlistItem::getById($itemId);
 
@@ -138,7 +128,12 @@ function reserveItem($matches)
             return;
         }
 
-        WishlistItem::reserve($itemId, $data['user_id']);
+        if (!empty($item['reserved_by'])) {
+            Response::error('Item is already reserved', [], 409);
+            return;
+        }
+
+        WishlistItem::reserve($itemId, $auth['user_id']);
 
         Response::success(
             'Item reserved successfully',
@@ -156,13 +151,23 @@ function reserveItem($matches)
 function unreserveItem($matches)
 {
     try {
-        $wishlistId = $matches[1];
-        $itemId = $matches[2];
+        $wishlistId = (int) $matches[1];
+        $itemId = (int) $matches[2];
+        $auth = Access::wishlistRead($wishlistId);
 
         $item = WishlistItem::getById($itemId);
 
         if (!$item || $item['wishlist_id'] != $wishlistId) {
             Response::error('Item not found', [], 404);
+            return;
+        }
+
+        $wishlist = Wishlist::getWishlist($wishlistId);
+        $isReserver = (int) ($item['reserved_by'] ?? 0) === (int) $auth['user_id'];
+        $isOwner = $wishlist && (int) $wishlist['user_id'] === (int) $auth['user_id'];
+
+        if (!$isReserver && !$isOwner) {
+            Response::error('Only the user who reserved this item can remove the reservation', [], 403);
             return;
         }
 
