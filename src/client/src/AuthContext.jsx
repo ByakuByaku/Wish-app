@@ -17,6 +17,12 @@ export function AuthProvider({ children }) {
     setUser(userData)
   }
 
+  function updateStoredUser(userData) {
+    const nextUser = { ...user, ...userData }
+    localStorage.setItem('user', JSON.stringify(nextUser))
+    setUser(nextUser)
+  }
+
   function signOut() {
     if (localStorage.getItem('token')) {
       logoutApi().catch(err => console.error('Logout API error:', err))
@@ -29,7 +35,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, signIn, signOut }}>
+    <AuthContext.Provider value={{ token, user, signIn, signOut, updateStoredUser }}>
       {children}
     </AuthContext.Provider>
   )

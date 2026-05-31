@@ -48,7 +48,7 @@ class JwtMiddleware {
     public static function requireAdmin(): array
     {
         $user = self::requireAuth();
-        if ($user['role'] != 1) {
+        if ($user['role'] != 0) {
             Logger::warning('Attempt to access admin resource without permissions', [
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
                 'user_id' => $user['user_id']

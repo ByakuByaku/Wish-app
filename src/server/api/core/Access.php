@@ -16,7 +16,7 @@ class Access
     {
         $auth = self::user();
 
-        if ((int) $auth['user_id'] !== $userId && (int) $auth['role'] !== 1) {
+        if ((int) $auth['user_id'] !== $userId && (int) $auth['role'] !== 0) {
             Response::error('Access denied', [], 403);
             exit;
         }
@@ -36,7 +36,7 @@ class Access
             return $auth;
         }
 
-        if ((int) $auth['role'] === 1) {
+        if ((int) $auth['role'] === 0){  
             return $auth;
         }
 
@@ -63,7 +63,7 @@ class Access
         $isPublic = (int) ($wishlist['is_public'] ?? 0) === 1;
         $isFriend = Friend::areFriends((int) $auth['user_id'], (int) $wishlist['user_id']);
 
-        if (!$isOwner && !$isPublic && !$isFriend && (int) $auth['role'] !== 1) {
+        if (!$isOwner && !$isPublic && !$isFriend && (int) $auth['role'] !== 0) {
             Response::error('Access denied', [], 403);
             exit;
         }
@@ -81,7 +81,7 @@ class Access
             exit;
         }
 
-        if ((int) $wishlist['user_id'] !== (int) $auth['user_id'] && (int) $auth['role'] !== 1) {
+        if ((int) $wishlist['user_id'] !== (int) $auth['user_id'] && (int) $auth['role'] !== 0) {
             Response::error('Access denied', [], 403);
             exit;
         }

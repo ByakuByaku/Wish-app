@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getWishlist, getItems } from '../api/api'
+import { deleteItem, getWishlist, getItems } from '../api/api'
 import './css/WishlistsPage.css'
 
 export default function WhishlistPage() {
@@ -10,6 +10,18 @@ export default function WhishlistPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
+  const [deletingId, setDeletingId] = useState(null)
+
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    if (!query) return items
+
+    return items.filter(item => (
+      item.name?.toLowerCase().includes(query) ||
+      item.description?.toLowerCase().includes(query)
+    ))
+  }, [items, search])
 
   useEffect(() => {
     if (!id) return
@@ -40,6 +52,21 @@ export default function WhishlistPage() {
       cancelled = true
     }
   }, [id])
+
+  async function handleDeleteItem(itemId) {
+    if (!window.confirm('Удалить этот предмет?')) return
+
+    setDeletingId(itemId)
+    setError('')
+    try {
+      await deleteItem(id, itemId)
+      setItems(prev => prev.filter(item => item.id !== itemId))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div>
@@ -73,21 +100,43 @@ export default function WhishlistPage() {
             </div>
           </div>
         ) : (
-          <div className="wishlists-grid">
-            {items.map(item => (
-              <div key={item.id} className="wishlist-card">
-                <h3>{item.name}</h3>
-                <p>{item.description || 'Нет описания'}</p>
-                {item.price != null && (
-                  <span className="items-count">{item.price} ₽</span>
-                )}
+          <>
+            <input
+              className="items-search"
+              type="search"
+              placeholder="Поиск по предметам"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+
+            {filteredItems.length === 0 ? (
+              <p className="loading">Ничего не найдено</p>
+            ) : (
+              <div className="wishlists-grid">
+                {filteredItems.map(item => (
+                  <div key={item.id} className="wishlist-card">
+                    <h3>{item.name}</h3>
+                    <p>{item.description || 'Нет описания'}</p>
+                    {item.price != null && (
+                      <span className="items-count">{item.price} ₽</span>
+                    )}
+                    <button
+                      type="button"
+                      className="btn-card-delete"
+                      disabled={deletingId === item.id}
+                      onClick={() => handleDeleteItem(item.id)}
+                    >
+                      {deletingId === item.id ? 'Удаляем...' : 'Удалить предмет'}
+                    </button>
+                  </div>
+                ))}
+                <Link to={`/wishlists/${id}/add-item`} className="add-card">
+                  <div className="add-icon">+</div>
+                  <span className="add-text">Добавить предмет</span>
+                </Link>
               </div>
-            ))}
-            <Link to={`/wishlists/${id}/add-item`} className="add-card">
-              <div className="add-icon">+</div>
-              <span className="add-text">Добавить предмет</span>
-            </Link>
-          </div>
+            )}
+          </>
         )}
       </main>
     </div>

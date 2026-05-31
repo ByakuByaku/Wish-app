@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import { getWishlist, getItems, reserveItem, unreserveItem } from '../api/api'
@@ -15,6 +15,17 @@ export default function FriendWishlistPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionId, setActionId] = useState(null)
+  const [search, setSearch] = useState('')
+
+  const filteredItems = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    if (!query) return items
+
+    return items.filter(item => (
+      item.name?.toLowerCase().includes(query) ||
+      item.description?.toLowerCase().includes(query)
+    ))
+  }, [items, search])
 
   async function loadItems() {
     const [wishlistData, itemsData] = await Promise.all([
@@ -106,8 +117,20 @@ export default function FriendWishlistPage() {
             <p className="loading">В этом вишлисте пока нет предметов</p>
           </div>
         ) : (
-          <div className="wishlists-grid">
-            {items.map(item => {
+          <>
+          <input
+            className="items-search"
+            type="search"
+            placeholder="Поиск по предметам"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+
+          {filteredItems.length === 0 ? (
+            <p className="loading">Ничего не найдено</p>
+          ) : (
+            <div className="wishlists-grid">
+            {filteredItems.map(item => {
               const reservedBy = item.reserved_by ? Number(item.reserved_by) : null
               const isMine = reservedBy === Number(user?.id)
               const isReserved = reservedBy != null
@@ -156,7 +179,9 @@ export default function FriendWishlistPage() {
                 </div>
               )
             })}
-          </div>
+            </div>
+          )}
+          </>
         )}
       </main>
     </div>

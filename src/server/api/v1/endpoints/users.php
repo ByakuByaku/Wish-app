@@ -97,17 +97,56 @@ function updateUser($matches){
         Access::self($id);
         $data = json_decode(file_get_contents('php://input'), true);
 
-        if (!isset($data['password'])) {
-            Response::error('Missing required field: password', [], 400);
-            return;
-        }
-
-        if (!User::getById($id)) {
+        $user = User::getById($id);
+        if (!$user) {
             Response::error('User not found', [], 404);
             return;
         }
 
-        User::updatePassword($id, $data['password']);
+        $hasProfileFields = isset($data['name']) || isset($data['email']) || array_key_exists('age', $data);
+        $hasPassword = isset($data['password']) && $data['password'] !== '';
+
+        if (!$hasProfileFields && !$hasPassword) {
+            Response::error('Nothing to update', [], 400);
+            return;
+        }
+
+        if ($hasProfileFields) {
+            $name = trim($data['name'] ?? $user['name']);
+            $email = trim($data['email'] ?? $user['email']);
+            $age = array_key_exists('age', $data) && $data['age'] !== '' ? $data['age'] : null;
+
+            if (!$name || !$email) {
+                Response::error('Name and email are required', [], 400);
+                return;
+            }
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Response::error('Invalid email', [], 400);
+                return;
+            }
+
+            $existingUser = User::getByEmail($email);
+            if ($existingUser && (int) $existingUser['id'] !== $id) {
+                Response::error('Email is already taken', [], 409);
+                return;
+            }
+
+            User::updateProfile($id, [
+                'name' => $name,
+                'email' => $email,
+                'age' => $age,
+            ]);
+        }
+
+        if ($hasPassword) {
+            if (strlen($data['password']) < 8) {
+                Response::error('Password must be at least 8 characters', [], 400);
+                return;
+            }
+
+            User::updatePassword($id, $data['password']);
+        }
 
         Response::success(
             'User updated successfully',
@@ -202,8 +241,10 @@ function loginUser() {
 function logoutUser() {
     try {
         $user = JwtMiddleware::requireAuth();
-        Logger::logUserAction($user['user_id'], 'logout', 'User logged out');
-        
+        Logger::info('User logged out', [
+            'user_id' => $user['user_id'],
+            'action' => 'logout'
+        ]);
         Response::success('Logout completed successfully', null);
     } catch (Exception $e) {
         Response::error('Logout failed', $e->getMessage(), 400);

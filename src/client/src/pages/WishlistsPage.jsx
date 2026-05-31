@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
-import { getUserWishlists } from '../api/api'
+import { deleteWishlist, getUserWishlists } from '../api/api'
 import './css/WishlistsPage.css'
 
 export default function WishlistsPage() {
@@ -9,6 +9,8 @@ export default function WishlistsPage() {
   const location = useLocation()
   const [wishlists, setWishlists] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [deletingId, setDeletingId] = useState(null)
 
   useEffect(() => {
     if (!user?.id) {
@@ -24,8 +26,24 @@ export default function WishlistsPage() {
       setWishlists(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Ошибка загрузки вишлистов:', error)
+      setError(error.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleDeleteWishlist(wishlistId) {
+    if (!window.confirm('Удалить этот вишлист?')) return
+
+    setDeletingId(wishlistId)
+    setError('')
+    try {
+      await deleteWishlist(wishlistId)
+      setWishlists(prev => prev.filter(wishlist => wishlist.id !== wishlistId))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -42,6 +60,7 @@ export default function WishlistsPage() {
 
       <main className="wishlists-container">
         <h1>Мои вишлисты</h1>
+        {error && <div className="error">{error}</div>}
 
         {loading ? (
           <p className="loading">Загрузка...</p>
@@ -55,15 +74,21 @@ export default function WishlistsPage() {
         ) : (
           <div className="wishlists-grid">
             {wishlists.map(wishlist => (
-              <Link
-                key={wishlist.id}
-                to={`/wishlists/${wishlist.id}`}
-                className="wishlist-card"
-              >
-                <h3>{wishlist.name}</h3>
-                <p>{wishlist.description || 'Нет описания'}</p>
-                <span className="items-count">Предметов: {Number(wishlist.items_count) || 0}</span>
-              </Link>
+              <div key={wishlist.id} className="wishlist-card">
+                <Link to={`/wishlists/${wishlist.id}`} className="card-link-area">
+                  <h3>{wishlist.name}</h3>
+                  <p>{wishlist.description || 'Нет описания'}</p>
+                  <span className="items-count">Предметов: {Number(wishlist.items_count) || 0}</span>
+                </Link>
+                <button
+                  type="button"
+                  className="btn-card-delete"
+                  disabled={deletingId === wishlist.id}
+                  onClick={() => handleDeleteWishlist(wishlist.id)}
+                >
+                  {deletingId === wishlist.id ? 'Удаляем...' : 'Удалить вишлист'}
+                </button>
+              </div>
             ))}
 
             <Link to="/create-wishlist" className="add-card">

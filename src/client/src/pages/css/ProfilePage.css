@@ -107,6 +107,42 @@
   border-color: #d9534f;
 }
 
+.btn-secondary {
+  flex: 1;
+  padding: 0.8rem;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #eeeeee;
+  border-color: #d6d6d6;
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eeeeee;
+}
+
+.profile-edit-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
 .error {
   text-align: center;
   color: #d9534f;

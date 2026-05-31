@@ -32,6 +32,18 @@ CREATE TABLE users (
     FOREIGN KEY (role) REFERENCES roles(id)
 );
 
+-- Default administrator account
+-- Email: admin@example.com
+-- Password: admin12345
+INSERT INTO users (name, email, age, password_hash, role)
+VALUES (
+    'Admin',
+    'admin@example.com',
+    NULL,
+    '$2y$10$NgT9tavPPwkyaI3CoWbUWOAkW7SOVX3z45WjRPk2T6L05cbrJlP/O',
+    0
+);
+
 -- Create wishlists table
 CREATE TABLE wishlists (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,17 +79,6 @@ CREATE TABLE friends (
     FOREIGN KEY (friend_id) REFERENCES users(id)
 );
 
--- Create user_permissions table
-CREATE TABLE user_permissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    role_id INTEGER NOT NULL,
-    permission TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(role_id, permission),
-    FOREIGN KEY (role_id) REFERENCES roles(id)
-);
-
-
 CREATE TABLE friend_invites (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code TEXT UNIQUE NOT NULL,
@@ -93,3 +94,29 @@ CREATE TABLE IF NOT EXISTS friend_invites (
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TRIGGER IF NOT EXISTS delete_user_related_data
+BEFORE DELETE ON users
+FOR EACH ROW
+BEGIN
+    DELETE FROM friends
+    WHERE user_id = OLD.id OR friend_id = OLD.id;
+
+    DELETE FROM friend_invites
+    WHERE user_id = OLD.id;
+
+    UPDATE wishlist_items
+    SET reserved_by = NULL
+    WHERE reserved_by = OLD.id;
+
+    DELETE FROM wishlists
+    WHERE user_id = OLD.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS delete_wishlist_items
+BEFORE DELETE ON wishlists
+FOR EACH ROW
+BEGIN
+    DELETE FROM wishlist_items
+    WHERE wishlist_id = OLD.id;
+END;

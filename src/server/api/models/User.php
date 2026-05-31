@@ -37,7 +37,7 @@ class User{
 
         $stmt = $db->prepare("
             INSERT INTO users (name, email, age, password_hash, role)
-            VALUES (?, ?, ?, ?, 2)
+            VALUES (?, ?, ?, ?, 1)
         ");
 
         $stmt->execute([
@@ -58,6 +58,23 @@ class User{
         ");
         
         return $stmt->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
+    }
+
+    public static function updateProfile($id, $data) {
+        $db = Database::connect();
+
+        $stmt = $db->prepare("
+            UPDATE users
+            SET name = ?, email = ?, age = ?
+            WHERE id = ?
+        ");
+
+        return $stmt->execute([
+            $data['name'],
+            $data['email'],
+            $data['age'] ?? null,
+            $id
+        ]);
     }
     
     public static function delete($id) {
